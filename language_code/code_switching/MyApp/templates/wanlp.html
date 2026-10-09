@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algérie · Code‑Switching Analyzer (V9.6)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    .lang-dza_lat { background: #e6f7ec; border-left: 5px solid #10b981; color: #065f46; }
+    .lang-dza_ar { background: #fdf2f2; border-left: 5px solid #f87171; color: #991b1b; }
+    .lang-msa { background: #f4eee6; border-left: 5px solid #b45309; color: #78350f; }
+    .lang-fr { background: #e6edff; border-left: 5px solid #3b82f6; color: #1e3a8a; }
+    .lang-en { background: #f0e6ff; border-left: 5px solid #8b5cf6; color: #4c1d95; }
+    .lang-entity { background: #fffbeb; border-left: 5px solid #f59e0b; color: #92400e; }
+
+    .segment { transition: all 0.2s ease; border-radius: 2rem; padding: 0.3rem 1rem; font-weight: 500; box-shadow: 0 2px 6px rgba(0,0,0,0.03); cursor: default; margin: 2px; display: inline-block; }
+    .segment:hover { transform: scale(1.03) translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.25); }
+    .glass-card { background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.6); }
+    .hero-wave { position: absolute; bottom: 0; left: 0; width: 100%; overflow: hidden; line-height: 0; }
+    
+    .recording { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    .chat-msg { animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    #tabContent { transition: opacity 0.3s ease; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+  <section class="relative bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-600 text-white overflow-hidden">
+    <div class="relative z-10 container mx-auto px-6 py-20 text-center">
+      <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-tight drop-shadow-lg">
+        <i class="fas fa-language mr-3"></i>Darija<span class="text-yellow-300">·</span>Switch
+      </h1>
+      <p class="text-xl md:text-2xl max-w-3xl mx-auto font-light drop-shadow">
+        Analyseur Multi-Agent SDIA : <span class="font-semibold text-yellow-200">Maerifa Engine</span>
+      </p>
+    </div>
+    <div class="hero-wave"><svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="relative block w-full h-20 text-gray-50 fill-current"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" opacity=".25"></path></svg></div>
+  </section>
+
+  <main class="container mx-auto px-4 py-12 max-w-6xl space-y-10 relative -mt-8 z-20">
+    <div class="glass-card rounded-3xl shadow-2xl p-8 border border-white/30">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-pen-alt text-teal-500 mr-2"></i> Entrée</h2>
+        <div class="flex gap-2">
+           <button id="loadSample" class="bg-gray-100 hover:bg-teal-100 text-gray-700 px-5 py-2 rounded-full transition text-sm font-medium shadow-sm"><i class="fas fa-flask mr-2"></i>Exemple</button>
+          <label class="bg-gray-100 hover:bg-blue-100 text-gray-700 px-5 py-2 rounded-full transition text-sm font-medium cursor-pointer shadow-sm">
+            <i class="fas fa-upload mr-2"></i>Importer .txt
+            <input type="file" accept=".txt" class="hidden" id="fileInput">
+          </label>
+          <button id="micBtn" class="bg-gray-100 hover:bg-red-50 text-gray-700 px-5 py-2 rounded-full transition text-sm font-medium shadow-sm border border-transparent"><i class="fas fa-microphone mr-2"></i>Micro</button>
+          <button id="resetBtn" class="bg-gray-100 hover:bg-amber-100 text-gray-700 px-5 py-2 rounded-full transition text-sm font-medium shadow-sm"><i class="fas fa-undo-alt mr-2"></i>Reset</button>
+          <button id="downloadBtn" class="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-full transition text-sm font-semibold shadow-md"><i class="fas fa-download mr-2"></i>JSON</button>
+        </div>
+      </div>
+      <textarea id="textInput" placeholder="Tapez ici ou utilisez le micro..." class="w-full min-h-[180px] p-5 text-gray-700 border-2 border-gray-100 rounded-2xl focus:border-teal-300 focus:ring focus:ring-teal-200 resize-y text-lg shadow-inner"></textarea>
+      <div class="flex justify-between items-center mt-4">
+        <div class="flex gap-3 bg-gray-100 px-4 py-2 rounded-full text-sm text-gray-500">
+          <span><i class="far fa-file-alt mr-1"></i><span id="charCount">0</span> car.</span>
+          <span><i class="fas fa-hashtag mr-1"></i><span id="wordCount">0</span> mots</span>
+        </div>
+        <button id="analyzeBtn" class="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-8 py-3 rounded-full font-semibold shadow-xl transition flex items-center gap-2">
+          <i class="fas fa-magic"></i> Analyser
+        </button>
+      </div>
+    </div>
+
+    <div id="resultsArea" class="space-y-10 hidden">
+        <div class="glass-card rounded-3xl shadow-xl p-6">
+          <h2 class="text-2xl font-bold text-gray-800 mb-4"><i class="fas fa-puzzle-piece text-teal-500 mr-2"></i>Segmentation Linguistique</h2>
+          <div id="segmentContainer" class="flex flex-wrap gap-2 leading-relaxed p-4 bg-white/60 rounded-2xl min-h-[100px]"></div>
+        </div>
+
+        <div id="reformulations" class="glass-card rounded-3xl shadow-xl p-6 hidden">
+          <div class="flex items-center gap-3 mb-4">
+            <i class="fas fa-rotate-left text-2xl text-purple-500"></i>
+            <h2 class="text-2xl font-bold text-gray-800">Versions reformulées</h2>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-5">
+            <button class="tabBtn px-6 py-2.5 rounded-full border-2 font-medium transition-all duration-200 flex items-center gap-2 border-teal-200 text-teal-800 hover:bg-teal-50" data-lang="darija"><i class="fas fa-comment"></i> Darija</button>
+            <button class="tabBtn px-6 py-2.5 rounded-full border-2 font-medium transition-all duration-200 border-blue-200 text-blue-800 hover:bg-blue-50" data-lang="french"><i class="fas fa-comment"></i> Français</button>
+            <button class="tabBtn px-6 py-2.5 rounded-full border-2 font-medium transition-all duration-200 border-amber-200 text-amber-800 hover:bg-amber-50" data-lang="arabic"><i class="fas fa-comment"></i> العربية</button>
+            <button class="tabBtn px-6 py-2.5 rounded-full border-2 font-medium transition-all duration-200 border-purple-200 text-purple-800 hover:bg-purple-50" data-lang="english"><i class="fas fa-comment"></i> English</button>
+          </div>
+          <div class="relative">
+            <div id="tabContent" class="w-full p-5 bg-white/80 border-2 border-gray-100 rounded-2xl text-gray-800 min-h-[130px] text-lg italic shadow-inner"></div>
+            <button id="copyReformulationBtn" class="absolute top-3 right-3 bg-white hover:bg-gray-100 text-gray-600 rounded-full w-10 h-10 flex items-center justify-center shadow-md transition border" title="Copier"><i class="far fa-copy"></i></button>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="space-y-6">
+                <div class="glass-card rounded-3xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6"><i class="fas fa-chart-simple text-blue-500 mr-2"></i>Distribution</h2>
+                    <div id="chartBars" class="space-y-4"></div>
+                </div>
+                <div class="glass-card rounded-3xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6"><i class="fas fa-list-numeric text-purple-500 mr-2"></i>Détails</h2>
+                    <div id="detailedStats" class="grid grid-cols-3 gap-3"></div>
+                </div>
+            </div>
+
+            <div class="flex flex-col space-y-6">
+                <div class="glass-card rounded-3xl shadow-xl p-6 flex-1 flex flex-col min-h-[350px]">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4"><i class="fas fa-robot text-teal-500 mr-2"></i>Assistant AI</h2>
+                    <div id="aiChatBox" class="flex-1 overflow-y-auto space-y-3 mb-4 p-2 bg-gray-50/50 rounded-xl max-h-[250px]">
+                        <div class="chat-msg text-sm bg-teal-50 text-teal-800 p-3 rounded-2xl rounded-tl-none border border-teal-100">
+                            Bonjour Sara ! Je suis prêt à analyser ton texte. Clique sur "Analyser" pour commencer.
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="aiInput" placeholder="Posez une question..." class="flex-1 px-4 py-2 rounded-full border border-gray-200 text-sm focus:outline-none focus:border-teal-400">
+                        <button id="aiSendBtn" class="bg-teal-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+                <div class="glass-card rounded-3xl shadow-xl p-6 bg-gradient-to-br from-white/80 to-blue-50/50">
+                    <h2 class="text-xl font-bold text-gray-800 mb-3"><i class="fas fa-microchip text-indigo-500 mr-2"></i>Explication Maerifa</h2>
+                    <div id="explanationBox" class="text-sm text-gray-600 space-y-2 italic text-justify">
+                        En attente d'analyse pour justifier les décisions du modèle...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-gray-200 py-6 text-center text-sm text-gray-400 bg-white/50 backdrop-blur-sm mt-8">
+    <i class="fas fa-code-branch mr-1"></i> analyseur algérien — détection contextuelle améliorée • 2026
+  </footer>
+
+
+<script>
+(function() {
+    // --- GLOBAL ELEMENTS ---
+    const elements = {
+        textInput: document.getElementById('textInput'),
+        analyzeBtn: document.getElementById('analyzeBtn'),
+        micBtn: document.getElementById('micBtn'),
+        resultsArea: document.getElementById('resultsArea'),
+        segmentContainer: document.getElementById('segmentContainer'),
+        chartBars: document.getElementById('chartBars'),
+        detailedStats: document.getElementById('detailedStats'),
+        resetBtn: document.getElementById('resetBtn'),
+        downloadBtn: document.getElementById('downloadBtn'),
+        charSpan: document.getElementById('charCount'),
+        wordSpan: document.getElementById('wordCount'),
+        aiChatBox: document.getElementById('aiChatBox'),
+        aiInput: document.getElementById('aiInput'),
+        aiSendBtn: document.getElementById('aiSendBtn'),
+        explanationBox: document.getElementById('explanationBox'),
+        loadSample: document.getElementById('loadSample'),
+        reformArea: document.getElementById('reformulations'),
+        tabBtns: document.querySelectorAll('.tabBtn'),
+        tabContent: document.getElementById('tabContent'),
+        copyReformBtn: document.getElementById('copyReformulationBtn')
+    };
+
+    // --- CONFIGURATION & STATE ---
+    const colorMap = {
+        "DZA_AR": "#f87171",
+        "MSA": "#b45309",
+        "DZA_LAT": "#10b981",
+        "FR": "#3b82f6",
+        "EN": "#8b5cf6",
+        "ENTITY": "#f59e0b"
+    };
+
+    let mediaRecorder, audioChunks = [],
+        lastServerData = null,
+        currentReformulations = {};
+
+    // --- AUDIO RECORDING LOGIC ---
+    elements.micBtn.addEventListener('click', async () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+            return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.onstart = () => {
+                elements.micBtn.classList.add('recording');
+                elements.micBtn.innerHTML = '<i class="fas fa-stop mr-2"></i>Stop';
+            };
+
+            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+            mediaRecorder.onstop = async () => {
+                elements.micBtn.classList.remove('recording');
+                elements.micBtn.innerHTML = '<i class="fas fa-microphone mr-2"></i>Micro';
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const formData = new FormData();
+                formData.append('audio_data', audioBlob);
+                sendRequest(formData, true);
+            };
+
+            mediaRecorder.start();
+        } catch (err) {
+            alert("Micro non détecté.");
+        }
+    });
+
+    // --- API COMMUNICATION ---
+    async function sendRequest(payload, isAudio = false) {
+        elements.analyzeBtn.disabled = true;
+        elements.analyzeBtn.innerHTML = isAudio ?
+            '<i class="fas fa-ear-listen fa-pulse"></i> Transcription...' :
+            '<i class="fas fa-spinner fa-spin"></i> Analyse...';
+
+        try {
+            const options = isAudio ? { method: 'POST', body: payload } : {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: payload })
+            };
+
+            const response = await fetch('/analyze/', options);
+            const data = await response.json();
+
+            if (data.status === "success") {
+                lastServerData = data;
+                currentReformulations = data.reformulations;
+
+                if (isAudio && data.transcript) {
+                    elements.textInput.value = data.transcript;
+                    updateStats();
+                }
+                renderResults(data);
+                updateAIContext(data);
+
+                if (currentReformulations) {
+                    elements.reformArea.classList.remove('hidden');
+                    updateTab('darija');
+                }
+            }
+        } catch (e) {
+            alert("Erreur serveur.");
+        } finally {
+            elements.analyzeBtn.disabled = false;
+            elements.analyzeBtn.innerHTML = '<i class="fas fa-magic"></i> Analyser';
+        }
+    }
+
+    // --- UI RENDERING ---
+    function renderResults(data) {
+        elements.segmentContainer.innerHTML = '';
+        const counts = { "dza_ar": 0, "msa": 0, "dza_lat": 0, "fr": 0, "en": 0, "entity": 0 };
+        let totalWords = 0;
+
+        // Render highlighted segments
+        data.segments.forEach(seg => {
+            const span = document.createElement('span');
+            span.textContent = seg.text;
+
+            const langKey = (seg.label || "ENTITY").toUpperCase();
+            span.className = `segment lang-${langKey.toLowerCase()}`;
+            span.style.borderBottom = `3px solid ${colorMap[langKey]}`;
+            elements.segmentContainer.appendChild(span);
+
+            const words = seg.text.trim().split(/\s+/).length;
+            if (counts.hasOwnProperty(langKey.toLowerCase())) counts[langKey.toLowerCase()] += words;
+            totalWords += words;
+        });
+
+        // Update Charts and Stats
+        elements.chartBars.innerHTML = '';
+        elements.detailedStats.innerHTML = '';
+
+        Object.keys(counts).forEach(lang => {
+            const val = counts[lang];
+            const pct = totalWords > 0 ? Math.round((val / totalWords) * 100) : 0;
+            const color = colorMap[lang.toUpperCase()];
+
+            if (pct > 0 || val > 0) {
+                elements.chartBars.innerHTML += `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-bold" style="color:${color}">
+                            <span>${lang.toUpperCase()}</span><span>${pct} %</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-1.5 rounded-full">
+                            <div class="h-1.5 rounded-full transition-all duration-500" style="width:${pct}%; background-color:${color}"></div>
+                        </div>
+                    </div>`;
+
+                elements.detailedStats.innerHTML += `
+                    <div class="p-2 border rounded-xl bg-white text-center">
+                        <div class="text-[10px] text-gray-400 font-bold uppercase">${lang}</div>
+                        <div class="text-lg font-black" style="color:${color}">${val}</div>
+                    </div>`;
+            }
+        });
+        elements.resultsArea.classList.remove('hidden');
+    }
+
+    // --- TAB MANAGEMENT (REFORMULATIONS) ---
+    elements.tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            updateTab(lang);
+            elements.tabBtns.forEach(b => b.classList.remove('ring-2', 'ring-teal-400', 'bg-white'));
+            btn.classList.add('ring-2', 'ring-teal-400', 'bg-white');
+        });
+    });
+
+    function updateTab(lang) {
+        if (!currentReformulations) return;
+        elements.tabContent.textContent = currentReformulations[lang] || "Traduction indisponible...";
+        elements.tabContent.style.opacity = 0;
+        setTimeout(() => { elements.tabContent.style.opacity = 1; }, 50);
+    }
+
+    elements.copyReformBtn.addEventListener('click', () => {
+        const text = elements.tabContent.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const icon = elements.copyReformBtn.querySelector('i');
+            icon.className = 'fas fa-check text-green-500';
+            setTimeout(() => { icon.className = 'far fa-copy'; }, 2000);
+        });
+    });
+
+    // --- AI CHAT & CONTEXT ---
+    function updateAIContext(data) {
+        const cmi = data.cmi || 0;
+        const domLang = data.segments[0]?.label.toUpperCase() || "N/A";
+        elements.explanationBox.innerHTML = `
+            <p><strong>Modèle :</strong> DziriBERT v33.4 + XLM-R + NLLB-200.</p>
+            <p><strong>Analyse :</strong> Dominance du <b>${domLang}</b> détectée. Le score CMI de <b>${cmi}%</b> indique une complexité linguistique ${cmi > 20 ? 'élevée' : 'modérée'}.</p>
+        `;
+        addBotMessage(`Analyse réussie ! Score CMI : ${cmi}%. J'ai aussi généré des reformulations multilingues.`);
+    }
+
+    elements.aiSendBtn.addEventListener('click', async () => {
+        const query = elements.aiInput.value.trim();
+        if (!query) return;
+
+        addUserMessage(query);
+        elements.aiInput.value = '';
+
+        try {
+            const response = await fetch('/ai-expert/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query: query,
+                    context: lastServerData
+                })
+            });
+            const data = await response.json();
+            addBotMessage(data.response || "Désolé, je rencontre une erreur.");
+        } catch (e) {
+            addBotMessage("Erreur de connexion avec l'expert AI.");
+        }
+    });
+
+    function addBotMessage(text) {
+        const div = document.createElement('div');
+        div.className = "chat-msg text-sm bg-teal-50 text-teal-800 p-3 rounded-2xl rounded-tl-none border border-teal-100 self-start";
+        div.innerHTML = text;
+        elements.aiChatBox.appendChild(div);
+        elements.aiChatBox.scrollTop = elements.aiChatBox.scrollHeight;
+    }
+
+    function addUserMessage(text) {
+        const div = document.createElement('div');
+        div.className = "chat-msg text-sm bg-gray-100 text-gray-700 p-3 rounded-2xl rounded-tr-none border border-gray-200 self-end ml-auto text-right";
+        div.textContent = text;
+        elements.aiChatBox.appendChild(div);
+        elements.aiChatBox.scrollTop = elements.aiChatBox.scrollHeight;
+    }
+
+    // --- GENERAL UTILITIES ---
+    function updateStats() {
+        const val = elements.textInput.value;
+        elements.charSpan.textContent = val.length;
+        elements.wordSpan.textContent = (val.match(/\S+/g) || []).length;
+    }
+
+    elements.analyzeBtn.addEventListener('click', () => sendRequest(elements.textInput.value));
+    elements.textInput.addEventListener('input', updateStats);
+    
+    elements.resetBtn.addEventListener('click', () => {
+        elements.textInput.value = '';
+        updateStats();
+        elements.resultsArea.classList.add('hidden');
+        elements.reformArea.classList.add('hidden');
+    });
+
+    elements.loadSample.addEventListener('click', () => {
+        elements.textInput.value = "Salam khouya, wach rak? Aujourd'hui j'ai une réunion importante avec le Professeur Bouramoul. SDIA project is great!";
+        updateStats();
+    });
+    // Ajoutez ceci dans votre composant React après avoir reçu les résultats de l'API
+const onAnalysisComplete = (data) => {
+    setSegments(data.segments);
+    // On attache les segments à la fenêtre pour que le bouton Download y ait accès[cite: 2]
+    window.currentSegments = data.segments; 
+};
+
+// Script du bouton de téléchargement
+document.getElementById('downloadBtn').onclick = function() {
+    const data = window.currentSegments;
+    
+    if (!data || data.length === 0) {
+        alert("Aucune donnée détectée. Lancez d'abord une analyse !");
+        return;
+    }
+
+    const blob = new Blob([JSON.stringify({
+        project: "Maerifa Engine V9.6",
+        results: data
+    }, null, 2)], { type: "application/json" });
+    
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "maerifa_export.json";
+    a.click();
+};
+})();
+</script>
+</body>
+</html>
