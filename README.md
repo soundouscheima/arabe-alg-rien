@@ -1,7 +1,4 @@
-Here are a few options, depending on where you are using this note (e.g., GitHub README, project documentation, or a presentation slide):
-
-Option 1: Formal & Professional (Best for GitHub or Documentation)
-"The fine-tuned Hugging Face model is too large to host or include directly in this repository. Currently, a public link is unavailable. For local testing or lightweight deployment, you can use the pretrained alger-ia/dziribert model from Hugging Face. 
+The fine-tuned Hugging Face model is too large to host or include directly in this repository. Currently, a public link is unavailable. For local testing or lightweight deployment, you can use the pretrained alger-ia/dziribert model from Hugging Face. 
 
 # Multilingual Code-Switching Detection and Rewriting Assistant
 
